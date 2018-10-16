@@ -16,26 +16,31 @@ const initProject = {
 		this.getInfo()
 	},
 	
-	projectInfo: {
-		fromGit: true
-	},
+	moduleInfo: {},
 	
 	getInfo () {
-		this.projectInfo = Object.assign({}, this.projectInfo, getGitUser())
+		this.moduleInfo = Object.assign({}, this.moduleInfo, getGitUser())
 		let prompts = []
-		if (this.projectInfo.fromGit) {
-			const choice = Object.keys(capricornModules)
-			prompts.push({
-				type: 'list',
-				name: 'projectType',
-				message: '请选择你要生成的功能模块模板',
-				choices: choice
-			})
-		}
+		
+		const templateChoice = Object.keys(capricornTemplates)
+		prompts.push({
+			type: 'list',
+			name: 'templateType',
+			message: '请选择你要使用的基础html模版',
+			choices: templateChoice
+		})
+		
+		const moduleChoices = Object.keys(capricornModules)
+		prompts.push({
+			type: 'list',
+			name: 'moduleType',
+			message: '请选择你要生成的功能模块模板',
+			choices: moduleChoices
+		})
 		
 		prompts.push({
 			type: 'input',
-			name: 'projectName',
+			name: 'moduleName',
 			message: '请输入新建功能模块的名称(格式：module-***)',
 			validate (val) {
 				if (val) {
@@ -51,64 +56,77 @@ const initProject = {
 		
 		prompts.push({
 			type: 'input',
-			name: 'projectDesc',
-			message: '请输入新建功能模块的项目描述'
-		})
-		
-		prompts.push({
-			type: 'input',
-			name: 'repository',
-			message: '请输入新建功能模块的git仓库地址'
+			name: 'moduleDesc',
+			message: '请输入新建模块的描述信息',
+			validate (val) {
+				if (val) {
+					return true
+				} else {
+					return '功能模块的描述信息不能为空，请输入描述信息！'
+				}
+			}
 		})
 		
 		Inquire.prompt(prompts).then(answers => {
-			this.projectInfo = Object.assign(this.projectInfo, answers)
+			this.moduleInfo = Object.assign(this.moduleInfo, answers)
 			this.ctrl()
 		})
 	},
 	
 	ctrl () {
-		const { projectType, fromGit, templatePath } = this.projectInfo
-		if (fromGit) {
-			const tmp = './capricorn-module-' + uid()
-			const spinner = new Spinner('正在下载模版...')
-			spinner.start()
-			
-			download(capricornModules[projectType], tmp, function (err) {
-				spinner.stop()
-				if (err) {
-					log.error(err)
-				}
-				this.generate(tmp)
-			}.bind(this))
-		} else {
-			this.generate(templatePath)
-		}
+		const { moduleType } = this.moduleInfo
+		const tmp = './capricorn-module-' + uid()
+		const spinner = new Spinner('正在初始化模块...')
+		spinner.start()
+		
+		download(capricornModules[moduleType], tmp, function (err) {
+			spinner.stop()
+			if (err) {
+				log.error(err)
+			}
+			this.generate(tmp)
+		}.bind(this))
 	},
 	
 	generate (tmp) {
-		const { projectName, fromGit } = this.projectInfo
+		const { moduleName } = this.moduleInfo
 		const khaos = new Khaos(tmp)
 		khaos.schema(this.formatOptions())
-		khaos.generate(`./${projectName.trim()}`, (err) => {
-			fromGit && rm(tmp)
+		khaos.generate(`./${moduleName.trim()}`, (err) => {
+			rm(tmp)
 			if (err) {
 				log.error(err)
 				return
 			}
-			renderAscii()
-			log.success('创建成功！')
+			log.success('模块初始化成功！')
+			this.downloadHtml()
 		})
 	},
 	
+	// 下载html模板
+	downloadHtml () {
+		const { moduleName, templateType } = this.moduleInfo
+		const spinner = new Spinner('正在下载html模版...')
+		spinner.start()
+		download(capricornTemplates[templateType], moduleName + '/template', function (err) {
+			spinner.stop()
+			if (err) {
+				log.error(err)
+				return
+			}
+			log.success('初始化完成！')
+			renderAscii()
+		}.bind(this))
+	},
+	
 	formatOptions () {
-		const keys = ['projectName', 'projectDesc', 'repository', 'author', 'email']
+		const keys = ['moduleName', 'moduleDesc', 'author', 'email']
 		const options = {}
 		
 		keys.forEach(v => {
 			options[v] = {
 				type: 'string',
-				default: this.projectInfo[v]
+				default: this.moduleInfo[v]
 			}
 		})
 		return options
