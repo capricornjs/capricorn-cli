@@ -8,34 +8,61 @@ const Spinner = require('../core/spinner')
 const download = require('download-git-repo')
 const uid = require('uid')
 const rm = require('rimraf').sync
-const { capricornModules, capricornTemplates } = require('../data/init')
+const { capricornTemplateAddress, capricornModuleAddress } = require('../data/init')
+const { getTemplateTypes, getModuleTypes } = require('../server/init')
 
 const initProject = {
 	init (argvs) {
 		const { _ } = argvs
-		this.getInfo()
+		this.getGitConfig().then(this.getInfo.bind(this))
 	},
 	
 	moduleInfo: {},
+	capricornTemplates: [],
+	capricornModules: [],
+	
+	// 获取基础html模版和模块初始化模版列表
+	getGitConfig () {
+		const spinner = new Spinner('拉取模版列表中...')
+		spinner.start()
+		return Promise.all([
+			getModuleTypes(),
+			getTemplateTypes()
+		]).then(resList => {
+			spinner.stop()
+			resList[0].forEach(v => {
+				if (v.name !== 'master') {
+					this.capricornModules.push((v.name))
+				}
+			})
+			resList[1].forEach(v => {
+				if (v.name !== 'master') {
+					this.capricornTemplates.push((v.name))
+				}
+			})
+			return resList
+		}).catch(e => {
+			console.log(e)
+			spinner.stop()
+		})
+	},
 	
 	getInfo () {
 		this.moduleInfo = Object.assign({}, this.moduleInfo, getGitUser())
 		let prompts = []
 		
-		const templateChoice = Object.keys(capricornTemplates)
 		prompts.push({
 			type: 'list',
 			name: 'templateType',
 			message: '请选择你要使用的基础html模版',
-			choices: templateChoice
+			choices: this.capricornTemplates
 		})
 		
-		const moduleChoices = Object.keys(capricornModules)
 		prompts.push({
 			type: 'list',
 			name: 'moduleType',
 			message: '请选择你要生成的功能模块模板',
-			choices: moduleChoices
+			choices: this.capricornModules
 		})
 		
 		prompts.push({
@@ -79,7 +106,7 @@ const initProject = {
 		const spinner = new Spinner('正在初始化模块...')
 		spinner.start()
 		
-		download(capricornModules[moduleType], tmp, function (err) {
+		download(capricornModuleAddress + '#' + moduleType, tmp, function (err) {
 			spinner.stop()
 			if (err) {
 				log.error(err)
@@ -108,7 +135,7 @@ const initProject = {
 		const { moduleName, templateType } = this.moduleInfo
 		const spinner = new Spinner('正在下载html模版...')
 		spinner.start()
-		download(capricornTemplates[templateType], moduleName + '/template', function (err) {
+		download(capricornTemplateAddress + '#' + templateType, moduleName + '/template', function (err) {
 			spinner.stop()
 			if (err) {
 				log.error(err)

@@ -1,45 +1,46 @@
 {
-  "name": "@capricorn/capricorn-cli",
-  "version": "0.0.1",
-  "description": "摩羯系统 - 命令行工具",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "bin": {
-    "cap": "./bin/cli.js",
-    "capricorn": "./bin/cli.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/capricornjs/capricorn-cli.git"
-  },
-  "keywords": [
-    "monajs",
-    "mona",
-    "mona-cli",
-    "cli"
-  ],
-  "author": "yangxi",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/capricornjs/capricorn-cli/issues"
-  },
-  "homepage": "https://github.com/capricornjs/capricorn-cli#readme",
-  "devDependencies": {
-    "download-git-repo": "^1.1.0",
-    "eslint": "^5.4.0",
-    "inquirer": "^6.2.0",
-    "khaos": "^0.9.3",
-    "khaos-patched": "^0.9.4",
-    "read-metadata": "^1.0.0",
-    "rimraf": "^2.6.2",
-    "uid": "0.0.2"
-  },
-  "dependencies": {
-    "@monajs/commander": "^0.4.1",
-    "chalk": "^2.4.1",
-    "console.table": "^0.10.0",
-    "tinify": "^1.6.0-beta.2"
-  }
+    "name": "capricorn-cli",
+    "version": "0.1.0",
+    "description": "摩羯系统 - 命令行工具",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "bin": {
+        "cap": "./bin/cli.js",
+        "capricorn": "./bin/cli.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/capricornjs/capricorn-cli.git"
+    },
+    "keywords": [
+        "monajs",
+        "mona",
+        "mona-cli",
+        "cli"
+    ],
+    "author": "yangxi",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/capricornjs/capricorn-cli/issues"
+    },
+    "homepage": "https://github.com/capricornjs/capricorn-cli#readme",
+    "devDependencies": {
+        "eslint": "^5.4.0"
+    },
+    "dependencies": {
+        "@monajs/commander": "^0.4.1",
+        "chalk": "^2.4.1",
+        "console.table": "^0.10.0",
+        "download-git-repo": "^1.1.0",
+        "inquirer": "^6.2.0",
+        "khaos": "^0.9.3",
+        "khaos-patched": "^0.9.4",
+        "node-fetch": "^2.2.0",
+        "read-metadata": "^1.0.0",
+        "rimraf": "^2.6.2",
+        "tinify": "^1.6.0-beta.2",
+        "uid": "0.0.2"
+    }
 }
