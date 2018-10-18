@@ -1,12 +1,15 @@
 #!/usr/bin/env node
 
 const program = require('@monajs/commander')
-const init = require('../src/commands/init.js')
 
 const cmds = [{
-	command: 'init',
-	module: init,
+	command: 'module',
+	module: require('../src/commands/module.js'),
 	desc: '创建一个新的功能模版'
+}, {
+	command: 'page',
+	module: require('../src/commands/page.js'),
+	desc: '创建一个页面'
 }]
 
 program({

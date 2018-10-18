@@ -11,9 +11,8 @@ const rm = require('rimraf').sync
 const { capricornTemplateAddress, capricornModuleAddress } = require('../data/init')
 const { getTemplateTypes, getModuleTypes } = require('../server/init')
 
-const initProject = {
+const module = {
 	init (argvs) {
-		const { _ } = argvs
 		this.getGitConfig().then(this.getInfo.bind(this))
 	},
 	
@@ -23,7 +22,7 @@ const initProject = {
 	
 	// 获取基础html模版和模块初始化模版列表
 	getGitConfig () {
-		const spinner = new Spinner('拉取模版列表中...')
+		const spinner = new Spinner('拉取模版列表...')
 		spinner.start()
 		return Promise.all([
 			getModuleTypes(),
@@ -72,7 +71,10 @@ const initProject = {
 			validate (val) {
 				if (val) {
 					if (val.indexOf('module-') !== 0) {
-						return '模块名称格式有误，请重新输入'
+						return '模块名称要以"module-"开头，请重新输入'
+					}
+					if (val.match(".*[A-Z]+.*")) {
+						return '模块名称不能包含大写字母，请重新输入'
 					}
 					return true
 				} else {
@@ -161,5 +163,5 @@ const initProject = {
 }
 
 exports.handler = argvs => {
-	initProject.init(argvs)
+	module.init(argvs)
 }
