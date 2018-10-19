@@ -11,8 +11,8 @@ const rm = require('rimraf').sync
 const { capricornTemplateAddress, capricornModuleAddress } = require('../data/init')
 const { getTemplateTypes, getModuleTypes } = require('../server/init')
 
-const module = {
-	init (argvs) {
+const moduleHandler = {
+	init () {
 		this.getGitConfig().then(this.getInfo.bind(this))
 	},
 	
@@ -163,5 +163,5 @@ const module = {
 }
 
 exports.handler = argvs => {
-	module.init(argvs)
+	moduleHandler.init(argvs)
 }

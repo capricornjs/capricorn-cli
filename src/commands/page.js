@@ -6,11 +6,11 @@ const getGitUser = require('../core/git-user')
 const Spinner = require('../core/spinner')
 const download = require('download-git-repo')
 const uid = require('uid')
-const exec = require('child_process').execSync
+const { spawn } = require('child_process')
 const { capricornTemplateAddress } = require('../data/init')
 const { getTemplateTypes } = require('../server/init')
 
-const page = {
+const pageHandler = {
 	init () {
 		this.getGitConfig().then(this.getInfo.bind(this))
 	},
@@ -105,9 +105,7 @@ const page = {
 			if (err) {
 				log.error(err)
 			}
-			log.success(`${this.projectName} 项目初始化成功!`)
 			this.updatePackage()
-			this.updateHtml()
 		}.bind(this))
 	},
 	
@@ -134,6 +132,7 @@ const page = {
 			fs.writeFile(packagePath, JSON.stringify(packageObj, null, 4), 'utf8', (err) => {
 				if (err) throw err
 				log.success('package.json更新成功！')
+				this.updateHtml()
 			})
 		})
 	},
@@ -161,11 +160,35 @@ const page = {
 			fs.writeFile(htmlPath, htmlString, 'utf8', (err) => {
 				if (err) throw err
 				log.success('index.html更新成功！')
+				log.success(`${this.projectName} 项目初始化成功!`)
+				log.info('开始安装依赖')
+				this.installPackage()
 			})
+		})
+	},
+	
+	installPackage () {
+		let modules = []
+		this.moduleList.forEach(v => {
+			modules.push(`@capricorn/${v}`)
+		})
+		const ls = spawn('npm', ['install', '--save', ...modules], {
+			cwd: `./${this.projectName}`
+		})
+		ls.stdout.on('data', (data) => {
+			console.log(`stdout:\n${data}`)
+		})
+		ls.stderr.on('data', (data) => {
+			console.log(`stderr: ${data}`)
+		})
+		ls.on('close', (code) => {
+			console.log(`子进程退出码：${code}`)
+			renderAscii()
+			log.success('安装成功!')
 		})
 	}
 }
 
 exports.handler = () => {
-	page.init()
+	pageHandler.init()
 }
