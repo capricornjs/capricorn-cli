@@ -10,6 +10,10 @@ const cmds = [{
 	command: 'page',
 	module: require('../src/commands/page.js'),
 	desc: '创建一个页面'
+}, {
+	command: 'release',
+	module: require('../src/commands/release.js'),
+	desc: '提交module'
 }]
 
 program({
