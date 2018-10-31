@@ -2,6 +2,7 @@ const { log, renderAscii } = require('../core/util')
 const Inquire = require('inquirer')
 const path = require('path')
 const fs = require('fs')
+const compose = require('koa-compose')
 const getGitUser = require('../core/git-user')
 const Khaos = require('khaos-patched')
 const Spinner = require('../core/spinner')
@@ -13,12 +14,20 @@ const { getTemplateTypes, getModuleTypes } = require('../server/init')
 
 const moduleHandler = {
 	init () {
-		this.getGitConfig().then(this.getInfo.bind(this))
+		this.getGitConfig().then(() => {
+			compose([
+				this.getInfo.bind(this),
+				this.ctrl.bind(this),
+				this.generate.bind(this),
+				this.downloadHtml.bind(this)
+			])()
+		})
 	},
 	
 	moduleInfo: {},
 	capricornTemplates: [],
 	capricornModules: [],
+	interimTemp: './capricorn-module-' + uid(),
 	
 	// 获取基础html模版和模块初始化模版列表
 	getGitConfig () {
@@ -46,7 +55,7 @@ const moduleHandler = {
 		})
 	},
 	
-	getInfo () {
+	getInfo (ctx, next) {
 		this.moduleInfo = Object.assign({}, this.moduleInfo, getGitUser())
 		let prompts = []
 		
@@ -73,7 +82,7 @@ const moduleHandler = {
 					if (val.indexOf('module-') !== 0) {
 						return '模块名称要以"module-"开头，请重新输入'
 					}
-					if (val.match(".*[A-Z]+.*")) {
+					if (val.match('.*[A-Z]+.*')) {
 						return '模块名称不能包含大写字母，请重新输入'
 					}
 					return true
@@ -98,46 +107,45 @@ const moduleHandler = {
 		
 		Inquire.prompt(prompts).then(answers => {
 			this.moduleInfo = Object.assign(this.moduleInfo, answers)
-			this.ctrl()
+			next()
 		})
 	},
 	
-	ctrl () {
+	ctrl (ctx, next) {
 		const { moduleType } = this.moduleInfo
-		const tmp = './capricorn-module-' + uid()
 		const spinner = new Spinner('正在初始化模块...')
 		spinner.start()
 		
-		download(capricornModuleAddress + '#' + moduleType, tmp, function (err) {
+		download(capricornModuleAddress + '#' + moduleType, this.interimTemp, (err) => {
 			spinner.stop()
 			if (err) {
 				log.error(err)
 			}
-			this.generate(tmp)
-		}.bind(this))
+			next()
+		})
 	},
 	
-	generate (tmp) {
+	generate (ctx, next) {
 		const { moduleName } = this.moduleInfo
-		const khaos = new Khaos(tmp)
+		const khaos = new Khaos(this.interimTemp)
 		khaos.schema(this.formatOptions())
 		khaos.generate(`./${moduleName.trim()}`, (err) => {
-			rm(tmp)
+			rm(this.interimTemp)
 			if (err) {
 				log.error(err)
 				return
 			}
 			log.success('模块初始化成功！')
-			this.downloadHtml()
+			next()
 		})
 	},
 	
 	// 下载html模板
-	downloadHtml () {
+	downloadHtml (ctx, next) {
 		const { moduleName, templateType } = this.moduleInfo
 		const spinner = new Spinner('正在下载html模版...')
 		spinner.start()
-		download(capricornTemplateAddress + '#' + templateType, moduleName + '/template', function (err) {
+		download(capricornTemplateAddress + '#' + templateType, moduleName + '/template', (err) => {
 			spinner.stop()
 			if (err) {
 				log.error(err)
@@ -145,7 +153,8 @@ const moduleHandler = {
 			}
 			log.success('初始化完成！')
 			renderAscii()
-		}.bind(this))
+			next()
+		})
 	},
 	
 	formatOptions () {
