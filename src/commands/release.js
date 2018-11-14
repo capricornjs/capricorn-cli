@@ -26,7 +26,7 @@ const releaseHandler = {
 		fs.readFile(packagePath, { encoding: 'utf8' }, (err, data) => {
 			if (err) throw err
 			let packageObj = JSON.parse(data.toString())
-			this.moduleInfo.name = path.basename('./')
+			this.moduleInfo.name = path.basename(path.resolve('./'))
 			this.moduleInfo.description = packageObj.description
 			this.moduleInfo.packageName = packageObj.name
 			next()
@@ -37,7 +37,7 @@ const releaseHandler = {
 		const declarePath = './module.config.json'
 		fs.readFile(declarePath, { encoding: 'utf8' }, (err, data) => {
 			if (err) throw err
-			this.moduleInfo.configDeclare = JSON.stringify(data)
+			this.moduleInfo.configDeclare = data
 			next()
 		})
 	},
