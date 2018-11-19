@@ -1,6 +1,6 @@
 {
     "name": "capricorn-cli",
-    "version": "0.4.1",
+    "version": "0.5.0",
     "description": "摩羯系统 - 命令行工具",
     "main": "index.js",
     "scripts": {

@@ -44,12 +44,12 @@ const releaseHandler = {
 	
 	// 提交
 	submit () {
-		const spinner = new Spinner('提交module...')
+		const spinner = new Spinner('提交模块...')
 		spinner.start()
 		addModule(this.moduleInfo).then(() => {
-			log.success('提交module成功.')
 			renderAscii()
 			spinner.stop()
+			log.success('模块提交成功.')
 		}).catch(e => {
 			log.error(e)
 			spinner.stop()

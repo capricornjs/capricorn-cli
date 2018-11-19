@@ -19,7 +19,8 @@ const moduleHandler = {
 				this.getInfo.bind(this),
 				this.ctrl.bind(this),
 				this.generate.bind(this),
-				this.downloadHtml.bind(this)
+				this.downloadHtml.bind(this),
+				this.generateIndex.bind(this)
 			])()
 		})
 	},
@@ -153,6 +154,16 @@ const moduleHandler = {
 			}
 			log.success('初始化完成！')
 			renderAscii()
+			next()
+		})
+	},
+	
+	generateIndex (ctx, next) {
+		const { moduleName } = this.moduleInfo
+		const content = `(function(){!window.Capricorn&&(window.Capricorn={});window.Capricorn.modules = {};window.Capricorn.modules["${moduleName}"] = [];window.Capricorn.modules["${moduleName}"].push({"name":"${moduleName}"});})();`
+		fs.writeFile(`${moduleName}/template/lib/index.js`, content, 'utf8', (err) => {
+			if (err) throw err
+			log.success('index.js生成成功')
 			next()
 		})
 	},
